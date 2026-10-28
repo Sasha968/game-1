@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>iSpy Game</title>
+<style>
+body{margin:0;background:#000;overflow:hidden}
+canvas{display:block}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d');
+c.width=window.innerWidth;c.height=window.innerHeight;
+let p={x:150,y:c.height-150,w:40,h:40,vy:0,j:false,r:0},e={x:c.width-200,y:c.height/2-50,r:80,s:'idle',t:0},o=[],sc=0,go=false,gs=false;
+document.onkeydown=e=>{if(e.code=='Space'){if(p.y>=c.height-190&&!go){p.vy=-15;p.j=true}else if(go){p.y=c.height-150;p.vy=0;o=[];sc=0;go=false;gs=true}}};
+c.onclick=()=>{if(!gs)gs=true;else if(go){p.y=c.height-150;p.vy=0;o=[];sc=0;go=false}};
+function update(){
+if(!gs||go)return;
+p.vy+=0.7;p.y+=p.vy;
+if(p.y>=c.height-190){p.y=c.height-190;p.vy=0;p.j=false}else p.r+=5;
+e.t++;
+if(e.s=='idle'&&e.t>100){e.s='warn';e.t=0}
+else if(e.s=='warn'&&e.t>30){e.s='atk';e.t=0;o.push({x:c.width,y:c.height-140,w:40,h:40,v:-8})}
+else if(e.s=='atk'&&e.t>50){e.s='idle';e.t=0}
+for(let i=o.length-1;i>=0;i--){
+o[i].x+=o[i].v;
+if(p.x<o[i].x+o[i].w&&p.x+p.w>o[i].x&&p.y<o[i].y+o[i].h&&p.y+p.h>o[i].y)go=true;
+if(o[i].x<-50){o.splice(i,1);sc++}
+}}
+function draw(){
+x.fillStyle='#0a0a1a';x.fillRect(0,0,c.width,c.height);
+x.fillStyle='#111';x.fillRect(0,c.height-100,c.width,100);
+x.strokeStyle='#0ff';x.lineWidth=3;x.beginPath();x.moveTo(0,c.height-100);x.lineTo(c.width,c.height-100);x.stroke();
+let ec=e.s=='idle'?'#fff':e.s=='warn'?'#fa0':'#f00';
+x.beginPath();x.arc(e.x,e.y,e.r,0,7);x.fillStyle=ec;x.fill();
+x.beginPath();x.arc(e.x-10,e.y,25,0,7);x.fillStyle='#000';x.fill();
+x.save();x.translate(p.x+20,p.y+20);x.rotate(p.r*0.017);x.fillStyle='#0ff';x.fillRect(-20,-20,40,40);x.restore();
+x.fillStyle='#f04';o.forEach(o=>{x.beginPath();x.moveTo(o.x,o.y+40);x.lineTo(o.x+20,o.y);x.lineTo(o.x+40,o.y+40);x.fill()});
+x.fillStyle='#0ff';x.font='28px Arial';x.fillText('Счет: '+sc,20,40);
+if(!gs){x.fillStyle='rgba(0,0,0,0.8)';x.fillRect(0,0,c.width,c.height);x.fillStyle='#0ff';x.font='bold 56px Arial';x.textAlign='center';x.fillText('iSpy',c.width/2,c.height/2);x.font='24px Arial';x.fillStyle='#fff';x.fillText('Нажми ПРОБЕЛ',c.width/2,c.height/2+50)}
+if(go){x.fillStyle='rgba(0,0,0,0.8)';x.fillRect(0,0,c.width,c.height);x.fillStyle='#f00';x.font='bold 64px Arial';x.textAlign='center';x.fillText('GAME OVER',c.width/2,c.height/2);x.fillStyle='#fff';x.font='24px Arial';x.fillText('Счет: '+sc,c.width/2,c.height/2+50)}
+}
+(function loop(){update();draw();requestAnimationFrame(loop)})();
+</script>
+</body>
+</html>
